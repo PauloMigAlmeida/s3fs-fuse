@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "hashicorp/precise64"
+  config.vm.box = "ubuntu/trusty64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -45,17 +45,19 @@ Vagrant.configure("2") do |config|
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
 
+  config.vm.synced_folder ".", "/src/s3fs-fuse/"
+
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-  # config.vm.provider "virtualbox" do |vb|
+   config.vm.provider "virtualbox" do |vb|
   #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
+     vb.gui = true
   #
   #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
+     vb.memory = "4096"
+   end
   #
   # View the documentation for the provider you are using for more
   # information on available options.
@@ -71,14 +73,22 @@ Vagrant.configure("2") do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
    config.vm.provision "shell", inline: <<-SHELL
-     apt-get update
-     apt-get install -y automake autotools-dev g++ git libcurl4-gnutls-dev libfuse-dev libssl-dev libxml2-dev make pkg-config python-pip
-     pip install awscli
-     git clone https://github.com/PauloMigAlmeida/s3fs-fuse.git
-     cd s3fs-fuse
-     ./autogen.sh
-     ./configure
-     make
-     make install
+    
+    sudo echo "LANG=en_US.UTF-8" >> /etc/environment
+    sudo echo "LANGUAGE=en_US.UTF-8" >> /etc/environment
+    sudo echo "LC_ALL=en_US.UTF-8" >> /etc/environment
+    sudo echo "LC_CTYPE=en_US.UTF-8" >> /etc/environment
+
+    add-apt-repository -y ppa:webupd8team/java
+    apt-get update
+    apt-get install -y ubuntu-desktop virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11 automake autotools-dev g++ git libcurl4-gnutls-dev libfuse-dev libssl-dev libxml2-dev make pkg-config python-pip eclipse eclipse-cdt
+    echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
+    echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
+    apt-get -y install oracle-java8-installer
+    apt-get -y install gnome-icon-theme-full tango-icon-theme
+    sudo echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
+ 
+    pip install awscli
+
    SHELL
 end
